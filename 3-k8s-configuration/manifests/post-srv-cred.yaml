@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-srv-config
+  namespace: demo-k8s
+data:
+  AUTH_DB_NAME: admin
+  DB_NAME: post
+  DB_PORT: "27017"
+  DB_HOST: post-db-service
+  USER_API_URL: http://user-srv-service:8080
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: post-srv-secret
+  namespace: demo-k8s
+type: Opaque
+data:
+  DB_USERNAME: cm9vdA==
+  DB_PASSWORD: cm9vdA==
+  

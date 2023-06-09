@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-db-config
+  namespace: demo-k8s
+data:
+  MONGO_INITDB_DATABASE: post
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: post-db-secret
+  namespace: demo-k8s
+type: Opaque
+data:
+  MONGO_INITDB_ROOT_USERNAME: cm9vdA==
+  MONGO_INITDB_ROOT_PASSWORD: cm9vdA==

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-srv
+  namespace: demo-k8s
+  labels:
+    app: user-srv
+spec:
+  selector:
+    matchLabels:
+      app: user-srv
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: user-srv
+    spec:
+      containers:
+        - name: user-srv-container
+          image: liakhaliaksandr/user-srv:1.0.0
+          ports:
+            - containerPort: 8080
+              name: user-srv
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          envFrom:
+            - configMapRef:
+                name: user-srv-config
+            - secretRef:
+                name: user-srv-secret

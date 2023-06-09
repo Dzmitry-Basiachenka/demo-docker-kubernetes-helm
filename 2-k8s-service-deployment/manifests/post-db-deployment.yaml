@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-db
+  namespace: demo-k8s
+  labels:
+    app: post-db
+spec:
+  selector:
+    matchLabels:
+      app: post-db
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: post-db
+    spec:
+      containers:
+        - name: post-mongo-container
+          image: mongo:latest
+          envFrom:
+            - configMapRef:
+                name: post-db-config

@@ -1,0 +1,392 @@
+---
+# Source: demo-helm/templates/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo-k8s
+---
+# Source: demo-helm/templates/post-db-cred.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: post-db-secret
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+type: Opaque
+data:
+    MONGO_INITDB_ROOT_PASSWORD: cm9vdA==
+    MONGO_INITDB_ROOT_USERNAME: cm9vdA==
+---
+# Source: demo-helm/templates/post-srv-cred.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: post-srv-secret
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+type: Opaque
+data:
+    DB_PASSWORD: cm9vdA==
+    DB_USERNAME: cm9vdA==
+---
+# Source: demo-helm/templates/user-db-cred.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-db-secret
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+type: Opaque
+data:
+    MONGO_INITDB_ROOT_PASSWORD: cm9vdA==
+    MONGO_INITDB_ROOT_USERNAME: cm9vdA==
+---
+# Source: demo-helm/templates/user-srv-cred.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: user-srv-secret
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+type: Opaque
+data:
+    DB_PASSWORD: cm9vdA==
+    DB_USERNAME: cm9vdA==
+---
+# Source: demo-helm/templates/post-db-cred.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-db-config
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+data:
+  MONGO_INITDB_DATABASE: post
+---
+# Source: demo-helm/templates/post-srv-cred.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-srv-config
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+data:
+  AUTH_DB_NAME: admin
+  DB_NAME: post
+  DB_PORT: "27017"
+  DB_HOST: post-db-service
+  USER_API_URL: http://user-srv-service:8080
+---
+# Source: demo-helm/templates/user-db-cred.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-db-config
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+data:
+  MONGO_INITDB_DATABASE: user
+---
+# Source: demo-helm/templates/user-srv-cred.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-srv-config
+  namespace: demo-k8s
+  labels:
+    generator: helm
+    date: 2023-02-04
+data:
+  AUTH_DB_NAME: admin
+  DB_NAME: user
+  DB_PORT: "27017"
+  DB_HOST: user-db-service
+  POST_API_URL: http://post-srv-service:8080
+---
+# Source: demo-helm/templates/post-db-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-db-service
+  namespace: demo-k8s
+  labels:
+    app: post-db
+spec:
+  selector:
+    app: post-db
+  ports:
+  - port: 27017
+    targetPort: 27017
+---
+# Source: demo-helm/templates/post-srv-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-srv-service
+  namespace: demo-k8s
+  labels:
+    app: post-srv
+spec:
+  selector:
+    app: post-srv
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+# Source: demo-helm/templates/user-db-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-db-service
+  namespace: demo-k8s
+  labels:
+    app: user-db
+spec:
+  selector:
+    app: user-db
+  ports:
+  - port: 27017
+    targetPort: 27017
+---
+# Source: demo-helm/templates/user-srv-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-srv-service
+  namespace: demo-k8s
+  labels:
+    app: user-srv
+spec:
+  selector:
+    app: user-srv
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+---
+# Source: demo-helm/templates/post-db-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-db
+  namespace: demo-k8s
+  labels:
+    app: post-db
+spec:
+  selector:
+    matchLabels:
+      app: post-db
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: post-db
+    spec:
+      containers:
+        - name: post-mongo-container
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: post-db
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: post-db-config
+            - secretRef:
+                name: post-db-secret
+---
+# Source: demo-helm/templates/post-srv-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-srv
+  namespace: demo-k8s
+  labels:
+    app: post-srv
+spec:
+  selector:
+    matchLabels:
+      app: post-srv
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: post-srv
+    spec:
+      containers:
+        - name: post-srv-container
+          image: liakhaliaksandr/post-srv:1.0.0
+          ports:
+            - containerPort: 8080
+              name: post-srv
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: post-srv-config
+            - secretRef:
+                name: post-srv-secret
+---
+# Source: demo-helm/templates/user-db-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-db
+  namespace: demo-k8s
+  labels:
+    app: user-db
+spec:
+  selector:
+    matchLabels:
+      app: user-db
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: user-db
+    spec:
+      containers:
+        - name: user-mongo-container
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: user-db
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: user-db-config
+            - secretRef:
+                name: user-db-secret
+---
+# Source: demo-helm/templates/user-srv-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-srv
+  namespace: demo-k8s
+  labels:
+    app: user-srv
+spec:
+  selector:
+    matchLabels:
+      app: user-srv
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: user-srv
+    spec:
+      containers:
+        - name: user-srv-container
+          image: liakhaliaksandr/user-srv:1.0.0
+          ports:
+            - containerPort: 8080
+              name: user-srv
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 2
+          envFrom:
+            - configMapRef:
+                name: user-srv-config
+            - secretRef:
+                name: user-srv-secret

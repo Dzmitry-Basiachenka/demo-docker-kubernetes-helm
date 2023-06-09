@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: post-srv-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: post-srv
+spec:
+  selector:
+    app: post-srv
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP

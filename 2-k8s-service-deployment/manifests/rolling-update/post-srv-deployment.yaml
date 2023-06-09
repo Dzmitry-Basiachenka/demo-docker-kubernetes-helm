@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-srv
+  namespace: demo-k8s
+  labels:
+    app: post-srv
+    version: 1.0.1
+spec:
+  selector:
+    matchLabels:
+      app: post-srv
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: post-srv
+        version: 1.0.1
+    spec:
+      containers:
+        - name: post-srv-container
+          image: liakhaliaksandr/post-srv:1.0.1
+          envFrom:
+            - configMapRef:
+                name: post-srv-config

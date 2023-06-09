@@ -1,0 +1,47 @@
+namespace: demo-k8s
+
+db:
+  secrets:
+    MONGO_INITDB_ROOT_USERNAME: cm9vdA==
+    MONGO_INITDB_ROOT_PASSWORD: cm9vdA==
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 27017
+    initialDelaySeconds: 150
+    periodSeconds: 10
+    timeoutSeconds: 2
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /
+      port: 27017
+    initialDelaySeconds: 150
+    periodSeconds: 10
+    timeoutSeconds: 2
+    successThreshold: 1
+    failureThreshold: 3
+
+srv:
+  secrets:
+    DB_USERNAME: cm9vdA==
+    DB_PASSWORD: cm9vdA==
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 8080
+    initialDelaySeconds: 150
+    periodSeconds: 10
+    timeoutSeconds: 2
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: 8080
+    initialDelaySeconds: 150
+    periodSeconds: 10
+    timeoutSeconds: 2
+    successThreshold: 1
+    failureThreshold: 3

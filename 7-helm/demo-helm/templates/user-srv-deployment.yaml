@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-srv
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: user-srv
+spec:
+  selector:
+    matchLabels:
+      app: user-srv
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: user-srv
+    spec:
+      containers:
+        - name: user-srv-container
+          image: liakhaliaksandr/user-srv:1.0.0
+          ports:
+            - containerPort: 8080
+              name: user-srv
+          livenessProbe:
+            {{- toYaml $.Values.srv.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml $.Values.srv.readinessProbe | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: user-srv-config
+            - secretRef:
+                name: user-srv-secret

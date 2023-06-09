@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: post-db-config
+  namespace: {{ .Values.namespace }}
+  {{- template "metadata.labels" }}
+data:
+  MONGO_INITDB_DATABASE: post
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: post-db-secret
+  namespace: {{ .Values.namespace }}
+  {{- template "metadata.labels" }}
+type: Opaque
+data:
+  {{- range $key, $val := .Values.db.secrets }}
+    {{ $key }}: {{ $val }}
+  {{- end }}

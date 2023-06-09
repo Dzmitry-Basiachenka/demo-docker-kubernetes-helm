@@ -1,0 +1,59 @@
+version: '3.1'
+
+services:
+
+  user-mongo:
+    container_name: user-mongo-container
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: user
+
+  post-mongo:
+    container_name: post-mongo-container
+    image: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: post
+
+  user-service:
+    container_name: user-srv-container
+    image: liakhaliaksandr/user-srv:1.0.0
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      - AUTH_DB_NAME=admin
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_NAME=user
+      - DB_PORT=27017
+      - DB_HOST=user-mongo-container
+      - POST_API_URL=http://post-srv-container:8080
+    depends_on:
+      - user-mongo
+
+  post-service:
+    container_name: post-srv-container
+    image: liakhaliaksandr/post-srv:1.0.0
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      - AUTH_DB_NAME=admin
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_NAME=post
+      - DB_PORT=27017
+      - DB_HOST=post-mongo-container
+      - USER_API_URL=http://user-srv-container:8080
+    depends_on:
+      - post-mongo

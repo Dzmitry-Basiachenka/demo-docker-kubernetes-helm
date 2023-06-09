@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: post-db
+  namespace: demo-k8s
+  labels:
+    app: post-db
+spec:
+  selector:
+    matchLabels:
+      app: post-db
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    metadata:
+      labels:
+        app: post-db
+    spec:
+      containers:
+        - name: post-mongo-container
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: post-db
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 27017
+            initialDelaySeconds: 150
+            periodSeconds: 10
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          envFrom:
+            - configMapRef:
+                name: post-db-config
+            - secretRef:
+                name: post-db-secret

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-srv-config
+  namespace: demo-k8s
+data:
+  AUTH_DB_NAME: admin
+  DB_USERNAME: root
+  DB_PASSWORD: root
+  DB_NAME: user
+  DB_PORT: "27017"
+  DB_HOST: user-db-service
+  POST_API_URL: http://post-srv-service:8080

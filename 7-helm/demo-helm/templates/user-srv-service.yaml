@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-srv-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: user-srv
+spec:
+  selector:
+    app: user-srv
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
